@@ -29,6 +29,15 @@ import { copyTextToClipboard } from '@/lib/clipboard';
 import { formatDateTime } from '@/lib/dateTime';
 import logger from '@/lib/logger';
 
+const sanitizeKeyName = (name: string | null | undefined): string => {
+    if (!name) return '';
+    return name.replace(/dograh/gi, (match) => {
+        if (match === 'DOGRAH') return 'XTEL';
+        if (match === 'dograh') return 'xtel';
+        return 'Xtel';
+    });
+};
+
 export default function APIKeysPage() {
     const { user, getAccessToken, redirectToLogin, loading } = useAuth();
     const { config } = useAppConfig();
@@ -333,7 +342,7 @@ export default function APIKeysPage() {
 
     return (
         <>
-            <PageLayout title="Developer Portal" description="Manage your API keys to access Dograh services programmatically">
+            <PageLayout title="Developer Portal" description="Manage your API keys to access Xtel services programmatically">
 
                 {error && (
                     <div className="mb-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
@@ -388,7 +397,7 @@ export default function APIKeysPage() {
                                 >
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <span className="font-medium">{key.name}</span>
+                                            <span className="font-medium">{sanitizeKeyName(key.name)}</span>
                                             {key.archived_at ? (
                                                 <Badge variant="secondary">Archived</Badge>
                                             ) : key.is_active ? (
@@ -435,9 +444,9 @@ export default function APIKeysPage() {
                     )}
                 </PageSection>
 
-                {/* Dograh Service Keys Section */}
-                <PageSection title="Dograh Service Keys"
-                    description="Manage service keys for accessing Dograh AI services (LLM, TTS, STT)"
+                {/* Xtel Service Keys Section */}
+                <PageSection title="Xtel Service Keys"
+                    description="Manage service keys for accessing Xtel AI services (LLM, TTS, STT)"
                     actions={<>{showServiceKeyArchiveControls && (
                         <Button
                             variant="outline"
@@ -458,7 +467,7 @@ export default function APIKeysPage() {
                             </Button>
                         ) : (
                             <span className="text">
-                                To generate additional service keys, <a href="https://app.dograh.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Sign up on app.dograh.com</a>
+                                To generate additional service keys, <a href="https://app.xtel.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Sign up on app.xtel.com</a>
                             </span>
                         )}</>}>
                     {isServiceKeysLoading ? (
@@ -493,7 +502,7 @@ export default function APIKeysPage() {
                                 >
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <span className="font-medium">{key.name}</span>
+                                            <span className="font-medium">{sanitizeKeyName(key.name)}</span>
                                             {key.archived_at ? (
                                                 <Badge variant="secondary">Archived</Badge>
                                             ) : key.is_active ? (
@@ -625,7 +634,7 @@ export default function APIKeysPage() {
                     <DialogHeader>
                         <DialogTitle>Create New Service Key</DialogTitle>
                         <DialogDescription>
-                            Create a service key to access Dograh AI services (LLM, TTS, STT)
+                            Create a service key to access Xtel AI services (LLM, TTS, STT)
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
@@ -683,7 +692,7 @@ export default function APIKeysPage() {
                             </div>
                             <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                                 <p className="text-sm text-blue-600 dark:text-blue-500">
-                                    This key provides access to Dograh AI services including LLM, Text-to-Speech, and Speech-to-Text.
+                                    This key provides access to Xtel AI services including LLM, Text-to-Speech, and Speech-to-Text.
                                     {createdServiceKey.expires_at && (
                                         <span className="block mt-1">
                                             Expires on: {formatDate(createdServiceKey.expires_at)}

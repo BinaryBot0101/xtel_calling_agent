@@ -44,7 +44,7 @@ function parseSetCookie(header: string) {
 describe("GET /impersonate", () => {
     it("returns 400 when refresh_token is missing", async () => {
         const response = await GET(
-            makeRequest("https://app.dograh.com/impersonate"),
+            makeRequest("https://app.xtel.com/impersonate"),
         );
         expect(response.status).toBe(400);
     });
@@ -52,20 +52,20 @@ describe("GET /impersonate", () => {
     it("redirects to redirect_path on the same origin", async () => {
         const response = await GET(
             makeRequest(
-                "https://app.dograh.com/impersonate?refresh_token=rt-new&redirect_path=/workflow/42",
+                "https://app.xtel.com/impersonate?refresh_token=rt-new&redirect_path=/workflow/42",
             ),
         );
         expect(response.status).toBe(307);
         expect(response.headers.get("location")).toBe(
-            "https://app.dograh.com/workflow/42",
+            "https://app.xtel.com/workflow/42",
         );
     });
 
     it.each(["eu", "in"])("sets a host-only session and redirects within the %s deployment", async (region) => {
         const response = await GET(
-            makeRequest(`https://${region}.dograh.com/impersonate?refresh_token=rt-regional&redirect_path=/workflow`),
+            makeRequest(`https://${region}.xtel.com/impersonate?refresh_token=rt-regional&redirect_path=/workflow`),
         );
-        expect(response.headers.get("location")).toBe(`https://${region}.dograh.com/workflow`);
+        expect(response.headers.get("location")).toBe(`https://${region}.xtel.com/workflow`);
         const cookies = response.headers.getSetCookie().map(parseSetCookie);
         expect(cookies).toHaveLength(1);
         expect(cookies[0].domain).toBeUndefined();
@@ -77,23 +77,23 @@ describe("GET /impersonate", () => {
     it("falls back to /workflow/create for a cross-origin redirect_path", async () => {
         const response = await GET(
             makeRequest(
-                "https://app.dograh.com/impersonate?refresh_token=rt-new&redirect_path=https://evil.com/phish",
+                "https://app.xtel.com/impersonate?refresh_token=rt-new&redirect_path=https://evil.com/phish",
             ),
         );
         expect(response.headers.get("location")).toBe(
-            "https://app.dograh.com/workflow/create",
+            "https://app.xtel.com/workflow/create",
         );
     });
 
     it("falls back to /workflow/create for a malformed redirect_path", async () => {
         const response = await GET(
             makeRequest(
-                "https://app.dograh.com/impersonate?refresh_token=rt-new&redirect_path=https%3A%2F%2F",
+                "https://app.xtel.com/impersonate?refresh_token=rt-new&redirect_path=https%3A%2F%2F",
             ),
         );
         expect(response.status).toBe(307);
         expect(response.headers.get("location")).toBe(
-            "https://app.dograh.com/workflow/create",
+            "https://app.xtel.com/workflow/create",
         );
     });
 
@@ -101,7 +101,7 @@ describe("GET /impersonate", () => {
         const hostRefresh = `__Host-hexclave-refresh-${PROJECT_ID}--default`;
         const response = await GET(
             makeRequest(
-                "https://app.dograh.com/impersonate?refresh_token=rt-new",
+                "https://app.xtel.com/impersonate?refresh_token=rt-new",
                 {
                     cookie: [
                         `${hostRefresh}=old-session`,
@@ -126,7 +126,7 @@ describe("GET /impersonate", () => {
         // ...and for the host-only plus each parent-domain scope.
         const accessDomains = new Set(accessDeletions.map((c) => c.domain));
         expect(accessDomains).toEqual(
-            new Set([undefined, "app.dograh.com", "dograh.com"]),
+            new Set([undefined, "app.xtel.com", "xtel.com"]),
         );
 
         // Enumerated --custom-* cookies are cleared too.
@@ -171,7 +171,7 @@ describe("GET /impersonate", () => {
         const hostRefresh = `__Host-hexclave-refresh-${PROJECT_ID}--default`;
         const response = await GET(
             makeRequest(
-                "https://app.dograh.com/impersonate?refresh_token=rt-new",
+                "https://app.xtel.com/impersonate?refresh_token=rt-new",
                 { cookie: `${hostRefresh}=old-session` },
             ),
         );
@@ -204,7 +204,7 @@ describe("GET /impersonate", () => {
 
     it("honors x-forwarded-proto case-insensitively when the request is http", async () => {
         const response = await GET(
-            makeRequest("http://app.dograh.com/impersonate?refresh_token=rt", {
+            makeRequest("http://app.xtel.com/impersonate?refresh_token=rt", {
                 forwardedProto: "HTTPS",
             }),
         );

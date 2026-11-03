@@ -85,6 +85,10 @@ def apply_managed_embeddings_base_url(
     provider: str | None,
     base_url: str | None,
 ) -> str | None:
-    if provider == ServiceProviders.DOGRAH.value or provider == ServiceProviders.DOGRAH:
+    if (
+        provider == ServiceProviders.DOGRAH.value
+        or provider == ServiceProviders.DOGRAH
+        or provider == "xtel"
+    ):
         return dograh_embeddings_base_url()
     return base_url

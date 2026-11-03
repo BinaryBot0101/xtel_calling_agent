@@ -217,7 +217,7 @@ def _oss_run_authorization_denied_result(
 def _service_uses_dograh(service: Any) -> bool:
     provider = getattr(service, "provider", None)
     return (
-        provider == ServiceProviders.DOGRAH or provider == ServiceProviders.DOGRAH.value
+        provider in {ServiceProviders.DOGRAH, ServiceProviders.DOGRAH.value, "dograh", "xtel"}
     )
 
 

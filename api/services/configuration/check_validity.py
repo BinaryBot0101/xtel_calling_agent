@@ -63,6 +63,7 @@ class UserConfigurationValidator:
             ServiceProviders.AZURE_SPEECH.value: self._check_azure_speech_api_key,
             ServiceProviders.CARTESIA.value: self._check_cartesia_api_key,
             ServiceProviders.DOGRAH.value: self._check_dograh_api_key,
+            "xtel": self._check_dograh_api_key,
             ServiceProviders.SARVAM.value: self._check_sarvam_api_key,
             ServiceProviders.SPEECHMATICS.value: self._check_speechmatics_api_key,
             ServiceProviders.CAMB.value: self._check_camb_api_key,

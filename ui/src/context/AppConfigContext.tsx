@@ -113,6 +113,20 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
         loadConfig();
     }, [loadConfig]);
 
+    useEffect(() => {
+        if (!config || config.backendStatus === 'reachable') {
+            return;
+        }
+
+        // When backend is unreachable, automatically re-poll every 3 seconds so the banner
+        // auto-dismisses as soon as the API container finishes booting or restarts.
+        const timer = setTimeout(() => {
+            loadConfig();
+        }, 3000);
+
+        return () => clearTimeout(timer);
+    }, [config, loadConfig]);
+
     return (
         <AppConfigContext.Provider value={{ config, loading, refresh: loadConfig }}>
             {children}

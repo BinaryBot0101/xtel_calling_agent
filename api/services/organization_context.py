@@ -23,6 +23,18 @@ class OrganizationContextResponse(BaseModel):
 
 async def get_organization_context(user: UserModel) -> OrganizationContextResponse:
     organization_id = user.selected_organization_id
+    if not organization_id:
+        async with db_client.async_session() as session:
+            from sqlalchemy import select
+            from api.db.models import OrganizationUserModel
+            stmt = select(OrganizationUserModel.organization_id).where(OrganizationUserModel.user_id == user.id).limit(1)
+            res = await session.execute(stmt)
+            fallback_org_id = res.scalar_one_or_none()
+            if fallback_org_id:
+                organization_id = fallback_org_id
+                user.selected_organization_id = fallback_org_id
+                await db_client.update_user_selected_organization(user.id, fallback_org_id)
+
     organization = (
         await db_client.get_organization_by_id(organization_id)
         if organization_id

@@ -188,7 +188,7 @@ export async function impersonateAsSuperadmin(params: {
   // ---------------------------------------------------------------------------------
   // Instead of setting the cookie here (which would also affect the superadmin
   // sub-domain), redirect the browser to the dedicated impersonation helper route
-  // (served from the target sub-domain, e.g. app.dograh.com). The route will set the
+  // (served from the target sub-domain, e.g. app.xtel.com). The route will set the
   // cookie for the *current* sub-domain only and then forward the user to the final
   // destination.
   // ---------------------------------------------------------------------------------

@@ -10,11 +10,12 @@ type HeadlessWidget = {
     sendMessage: (text: string) => Promise<unknown[]>;
 };
 
-type WidgetWindow = Window & { DograhWidget?: HeadlessWidget };
+type WidgetWindow = Window & { XtelWidget?: HeadlessWidget; XtelWidget?: HeadlessWidget };
 
 describe("headless chat embed example", () => {
     afterEach(() => {
-        delete (window as WidgetWindow).DograhWidget;
+        delete (window as WidgetWindow).XtelWidget;
+        delete (window as WidgetWindow).XtelWidget;
         vi.unstubAllGlobals();
         vi.restoreAllMocks();
         document.body.innerHTML = "";
@@ -22,7 +23,7 @@ describe("headless chat embed example", () => {
 
     it("waits for the async widget script before registering callbacks", () => {
         document.body.innerHTML = `
-            <script id="dograh-widget"></script>
+            <script id="xtel-widget"></script>
             <button id="open-chat"></button>
             <input id="chat-input" />
             <button id="send-btn"></button>
@@ -46,8 +47,8 @@ describe("headless chat embed example", () => {
         expect(onChatStateChange).not.toHaveBeenCalled();
         expect(onMessage).not.toHaveBeenCalled();
 
-        (window as WidgetWindow).DograhWidget = widget;
-        document.getElementById("dograh-widget")?.dispatchEvent(new Event("load"));
+        (window as WidgetWindow).XtelWidget = widget;
+        document.getElementById("xtel-widget")?.dispatchEvent(new Event("load"));
 
         expect(onChatStateChange).toHaveBeenCalledOnce();
         expect(onMessage).toHaveBeenCalledOnce();

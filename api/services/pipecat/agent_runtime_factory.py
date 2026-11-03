@@ -251,7 +251,7 @@ class AgentRuntimeFactory:
                 usage_context="variable_extraction",
             )
             if needs_extraction_llm
-            and user_config.llm.provider == ServiceProviders.DOGRAH.value
+            and user_config.llm.provider in {ServiceProviders.DOGRAH.value, "xtel"}
             else llm
         )
 

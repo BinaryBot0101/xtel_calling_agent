@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 
-export const OSS_TOKEN_COOKIE = 'dograh_auth_token';
-export const OSS_USER_COOKIE = 'dograh_auth_user';
+export const OSS_TOKEN_COOKIE = 'xtel_auth_token';
+export const OSS_USER_COOKIE = 'xtel_auth_user';
 
 /**
  * Whether the browser reached this deployment over HTTPS.

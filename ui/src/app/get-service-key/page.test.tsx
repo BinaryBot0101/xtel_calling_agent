@@ -46,7 +46,7 @@ describe('verified email service key onboarding', () => {
         state.user!.primaryEmailVerified = false;
         render(<GetServiceKeyPage />);
         expect(screen.queryByRole('button', { name: 'Create service key' })).toBeNull();
-        expect(screen.getByRole('link', { name: 'your Dograh account settings' }).getAttribute('href')).toBe('/handler/account-settings');
+        expect(screen.getByRole('link', { name: 'your Xtel account settings' }).getAttribute('href')).toBe('/handler/account-settings');
         expect(state.createKey).not.toHaveBeenCalled();
     });
 
@@ -59,7 +59,7 @@ describe('verified email service key onboarding', () => {
         fireEvent.click(button);
         await screen.findByLabelText('Your service key');
         expect(state.createKey).toHaveBeenCalledTimes(1);
-        expect(state.createKey).toHaveBeenCalledWith({ body: { name: 'OSS Dograh provider' }, headers: { Authorization: 'Bearer stack-access-token' } });
+        expect(state.createKey).toHaveBeenCalledWith({ body: { name: 'OSS Xtel provider' }, headers: { Authorization: 'Bearer stack-access-token' } });
         expect(screen.queryByRole('button', { name: 'Create service key' })).toBeNull();
         expect((screen.getByLabelText('Your service key') as HTMLInputElement).value).toBe('mps_sk_test');
     });
@@ -76,7 +76,7 @@ describe('verified email service key onboarding', () => {
     it('sends OSS users to hosted onboarding without authenticating or minting', () => {
         state.provider = 'local';
         render(<GetServiceKeyPage />);
-        expect(screen.getByRole('link').getAttribute('href')).toBe('https://app.dograh.com/get-service-key');
+        expect(screen.getByRole('link').getAttribute('href')).toBe('https://app.xtel.com/get-service-key');
         expect(state.sendEmail).not.toHaveBeenCalled();
         expect(state.createKey).not.toHaveBeenCalled();
     });

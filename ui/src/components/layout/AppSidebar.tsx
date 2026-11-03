@@ -7,11 +7,10 @@ import {
   Brain,
   ChevronLeft,
   ChevronRight,
-  CircleDollarSign,
   Database,
   FileText,
-  Home,
   Key,
+  LayoutDashboard,
   LogOut,
   type LucideIcon,
   Megaphone,
@@ -20,7 +19,6 @@ import {
   Settings,
   ShieldCheck,
   TrendingUp,
-  UserRound,
   Workflow,
   Wrench,
 } from "lucide-react";
@@ -56,7 +54,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAppConfig } from "@/context/AppConfigContext";
-import { useLeadForms } from "@/context/LeadFormsContext";
 import { useTelephonyConfigWarnings } from "@/context/TelephonyConfigWarningsContext";
 import { useLatestReleaseVersion } from "@/hooks/useLatestReleaseVersion";
 import type { LocalUser } from "@/lib/auth";
@@ -81,9 +78,9 @@ const NAV_SECTIONS: SidebarNavSection[] = [
   {
     items: [
       {
-        title: "Overview",
-        url: "/overview",
-        icon: Home,
+        title: "Dashboard",
+        url: "/dashboard",
+        icon: LayoutDashboard,
       },
     ],
   },
@@ -152,11 +149,6 @@ const NAV_SECTIONS: SidebarNavSection[] = [
         icon: TrendingUp,
       },
       {
-        title: "Billing",
-        url: "/billing",
-        icon: CircleDollarSign,
-      },
-      {
         title: "Reports",
         url: "/reports",
         icon: FileText,
@@ -171,7 +163,6 @@ export function AppSidebar() {
   const { state, isMobile, setOpenMobile } = useSidebar();
   const { provider, logout, user } = useAuth();
   const { config } = useAppConfig();
-  const { openHireExpert } = useLeadForms();
   const {
     telnyxMissingWebhookPublicKeyCount,
     vonageMissingSignatureSecretCount,
@@ -300,35 +291,6 @@ export function AppSidebar() {
     </Button>
   );
 
-  // "Hire an Expert" CTA, rendered INSIDE the shared footer pill next to the
-  // profile icon. Expanded: label pill filling the row. Collapsed: icon-only.
-  const hireExpertButton = isCollapsed ? (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          size="icon"
-          className="h-7 w-7 rounded-full"
-          onClick={() => openHireExpert("sidebar")}
-          aria-label="Hire an Expert"
-        >
-          <UserRound className="h-3.5 w-3.5" />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side="right">
-        <p>Hire an Expert</p>
-      </TooltipContent>
-    </Tooltip>
-  ) : (
-    <Button
-      size="sm"
-      className="h-7 gap-1.5 rounded-full px-3 text-xs"
-      onClick={() => openHireExpert("sidebar")}
-    >
-      <UserRound className="h-3.5 w-3.5" />
-      Hire an Expert
-    </Button>
-  );
-
   return (
     <Sidebar collapsible="icon" variant="floating" className="app-sidebar-dock py-4">
       <SidebarHeader className="px-2 py-3 notranslate" translate="no">
@@ -353,7 +315,7 @@ export function AppSidebar() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <a
-                    href="https://docs.dograh.com/deployment/update"
+                    href="https://docs.xtel.com/deployment/update"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 rounded-md border bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium leading-none text-amber-900 transition-opacity hover:opacity-80 dark:bg-amber-950 dark:text-amber-200"
@@ -400,7 +362,7 @@ export function AppSidebar() {
       <SidebarContent className={cn("notranslate", isCollapsed && "px-0")} translate="no">
         {NAV_SECTIONS.map((section, index) => (
           <SidebarGroup
-            key={section.label ?? "overview"}
+            key={section.label ?? "dashboard"}
             className={index === 0 ? "mt-2" : "mt-6"}
           >
             {section.label && (
@@ -433,8 +395,7 @@ export function AppSidebar() {
           {provider !== "stack" && (
             <div
               className={cn(
-                "flex items-center justify-between gap-1 rounded-full border border-border/60 bg-muted/30 p-1",
-                isCollapsed && "flex-col"
+                "flex items-center justify-center rounded-full border border-border/60 bg-muted/30 p-1"
               )}
             >
               <DropdownMenu>
@@ -460,15 +421,13 @@ export function AppSidebar() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              {hireExpertButton}
             </div>
           )}
 
           {provider === "stack" && (
             <div
               className={cn(
-                "flex items-center justify-between gap-1 rounded-full border border-border/60 bg-muted/30 p-1",
-                isCollapsed && "flex-col"
+                "flex items-center justify-center rounded-full border border-border/60 bg-muted/30 p-1"
               )}
             >
               <DropdownMenu>
@@ -501,7 +460,6 @@ export function AppSidebar() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              {hireExpertButton}
             </div>
           )}
 

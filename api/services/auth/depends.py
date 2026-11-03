@@ -283,6 +283,16 @@ async def get_user_with_selected_organization(
     user: Annotated[UserModel, Depends(get_user)],
 ) -> UserModel:
     if not user.selected_organization_id:
+        async with db_client.async_session() as session:
+            from sqlalchemy import select
+            from api.db.models import OrganizationUserModel
+            stmt = select(OrganizationUserModel.organization_id).where(OrganizationUserModel.user_id == user.id).limit(1)
+            res = await session.execute(stmt)
+            fallback_org_id = res.scalar_one_or_none()
+            if fallback_org_id:
+                user.selected_organization_id = fallback_org_id
+                await db_client.update_user_selected_organization(user.id, fallback_org_id)
+    if not user.selected_organization_id:
         raise HTTPException(status_code=400, detail="No organization selected")
     return user
 
@@ -317,6 +327,17 @@ async def _handle_oss_auth(authorization: str | None) -> UserModel:
 
     # Deliberately outside the try above: a provisioning failure must not be
     # reported to the user as an expired token.
+    if not user.selected_organization_id:
+        async with db_client.async_session() as session:
+            from sqlalchemy import select
+            from api.db.models import OrganizationUserModel
+            stmt = select(OrganizationUserModel.organization_id).where(OrganizationUserModel.user_id == user.id).limit(1)
+            res = await session.execute(stmt)
+            fallback_org_id = res.scalar_one_or_none()
+            if fallback_org_id:
+                user.selected_organization_id = fallback_org_id
+                await db_client.update_user_selected_organization(user.id, fallback_org_id)
+
     if user.selected_organization_id:
         await ensure_organization_bootstrapped(
             user.selected_organization_id,

@@ -648,7 +648,7 @@ export default function UsagePage() {
                             <div className="mt-4 p-3 bg-muted rounded-md">
                                 <p className="text-sm text-muted-foreground">
                                     Total for filtered period: <span className="font-semibold text-foreground">
-                                        {usageHistory.total_dograh_tokens.toLocaleString()} Dograh Tokens
+                                        {((usageHistory as any).total_xtel_tokens ?? usageHistory.total_dograh_tokens ?? 0).toLocaleString()} Xtel Tokens
                                     </span>
                                     {' • '}
                                     <span className="font-semibold text-foreground">

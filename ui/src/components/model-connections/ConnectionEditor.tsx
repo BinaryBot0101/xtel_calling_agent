@@ -89,13 +89,16 @@ export function ConnectionEditor({ catalog, connection, onSaved, providerKeys, r
             <Label htmlFor="connection-provider">Provider</Label>
             <ConfigurationSelect id="connection-provider" value={provider} required disabled={Boolean(connection)} onValueChange={changeProvider}
                 options={Object.entries(providers)
-                    .map(([key, schema]) => ({ value: key, label: schema.title || key }))
+                    .map(([key, schema]) => ({
+                        value: key,
+                        label: key === "xtel" || key === "dograh" || schema.title === "Xtel" || schema.title === "Dograh" ? "Xtel" : (schema.title || key),
+                    }))
                     .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }))} />
         </div>
         <div className="space-y-1.5"><Label htmlFor="connection-name">Connection name</Label>
             <Input id="connection-name" required maxLength={128} placeholder="Production account" value={name} onChange={event => setName(event.target.value)} /></div>
-        {provider === "dograh" && <p className="text-sm text-muted-foreground">
-            Get a service key using your email at <a className="underline" href="https://app.dograh.com/get-service-key" target="_blank" rel="noopener noreferrer">Dograh</a>, then paste it below.
+        {(provider === "xtel" || provider === "dograh") && <p className="text-sm text-muted-foreground">
+            Get a service key using your email at <a className="underline" href="https://app.xtel.com/get-service-key" target="_blank" rel="noopener noreferrer">Xtel</a>, then paste it below.
         </p>}
         {entry && <>
             {Object.keys(entry.connection_fields).length > 0 && <fieldset className="space-y-3">

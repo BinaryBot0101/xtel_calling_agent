@@ -3,36 +3,36 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WORKSPACE_DIR="${DOGRAH_INIT_WORKSPACE_DIR:-/workspace}"
-OUTPUT_ROOT="${DOGRAH_INIT_OUTPUT_ROOT:-/generated}"
+WORKSPACE_DIR="${XTEL_INIT_WORKSPACE_DIR:-/workspace}"
+OUTPUT_ROOT="${XTEL_INIT_OUTPUT_ROOT:-/generated}"
 NGINX_OUTPUT_DIR="$OUTPUT_ROOT/nginx"
 COTURN_OUTPUT_DIR="$OUTPUT_ROOT/coturn"
-CERTS_DIR="${DOGRAH_INIT_CERTS_DIR:-/certs}"
+CERTS_DIR="${XTEL_INIT_CERTS_DIR:-/certs}"
 
 # shellcheck disable=SC1091
 . "$SCRIPT_DIR/lib/setup_common.sh"
 
-DOGRAH_DEPLOY_PROJECT_DIR="$WORKSPACE_DIR"
+XTEL_DEPLOY_PROJECT_DIR="$WORKSPACE_DIR"
 
 mkdir -p "$NGINX_OUTPUT_DIR" "$COTURN_OUTPUT_DIR"
 
 if [[ "${ENVIRONMENT:-local}" == "production" ]]; then
-    dograh_validate_remote_runtime_env
-    [[ -f "$CERTS_DIR/local.crt" ]] || dograh_fail "certs/local.crt not found"
-    [[ -f "$CERTS_DIR/local.key" ]] || dograh_fail "certs/local.key not found"
+    xtel_validate_remote_runtime_env
+    [[ -f "$CERTS_DIR/local.crt" ]] || xtel_fail "certs/local.crt not found"
+    [[ -f "$CERTS_DIR/local.key" ]] || xtel_fail "certs/local.key not found"
 
     export TURN_EXTERNAL_IP="$SERVER_IP"
-    dograh_render_remote_nginx_conf "$WORKSPACE_DIR" "$NGINX_OUTPUT_DIR/default.conf"
-    dograh_render_remote_turn_conf "$WORKSPACE_DIR" "$COTURN_OUTPUT_DIR/turnserver.conf"
-    dograh_success "✓ dograh-init rendered remote nginx and coturn config"
+    xtel_render_remote_nginx_conf "$WORKSPACE_DIR" "$NGINX_OUTPUT_DIR/default.conf"
+    xtel_render_remote_turn_conf "$WORKSPACE_DIR" "$COTURN_OUTPUT_DIR/turnserver.conf"
+    xtel_success "✓ xtel-init rendered remote nginx and coturn config"
     exit 0
 fi
 
 if [[ -n "${TURN_SECRET:-}" && -n "${TURN_HOST:-}" ]]; then
     export TURN_EXTERNAL_IP="$TURN_HOST"
-    dograh_render_remote_turn_conf "$WORKSPACE_DIR" "$COTURN_OUTPUT_DIR/turnserver.conf"
-    dograh_success "✓ dograh-init rendered local TURN config"
+    xtel_render_remote_turn_conf "$WORKSPACE_DIR" "$COTURN_OUTPUT_DIR/turnserver.conf"
+    xtel_success "✓ xtel-init rendered local TURN config"
     exit 0
 fi
 
-dograh_success "✓ dograh-init no-op for current profile"
+xtel_success "✓ xtel-init no-op for current profile"

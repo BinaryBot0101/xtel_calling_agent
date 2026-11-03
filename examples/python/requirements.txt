@@ -1,2 +1,2 @@
-dograh-sdk
+xtel-sdk
 python-dotenv

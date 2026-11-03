@@ -1,6 +1,6 @@
-# Dograh Helm chart
+# Xtel Helm chart
 
-Deploys Dograh on Kubernetes with decomposed backend workloads (web,
+Deploys Xtel on Kubernetes with decomposed backend workloads (web,
 ARQ workers, telephony singleton, campaign singleton), Next.js UI, and
 coturn for WebRTC media relay. Implements the architecture defined in
 `HELM_DEPLOYMENT_PLAN.md` at the repo root.
@@ -13,13 +13,13 @@ exercised against a live cluster.
 ## Quick start
 
 ```bash
-cd deploy/helm/dograh
+cd deploy/helm/xtel
 
 # Install with defaults (all internal deps, Gateway API exposure).
 # The bundled Postgres/Redis/MinIO are in-chart manifests (official Postgres and
-# Redis images, dograh's MinIO build) — no `helm dependency` / subchart pull step
+# Redis images, xtel's MinIO build) — no `helm dependency` / subchart pull step
 # needed.
-helm install dograh . \
+helm install xtel . \
   --set secrets.ossJwtSecret="$(openssl rand -hex 32)" \
   --set secrets.turnSecret="$(openssl rand -hex 32)" \
   --set exposure.gatewayApi.gatewayClassName=istio
@@ -32,12 +32,12 @@ and `examples/values-aws.yaml` for topology-specific overrides.
 
 | Workload                     | Replicas    | Strategy        | Notes |
 |------------------------------|-------------|-----------------|-------|
-| `dograh-web`                 | 2 (HPA opt) | RollingUpdate   | Long-lived WS, graceful drain |
-| `dograh-arq-worker`          | 1 (HPA opt) | RollingUpdate   | Stateless |
-| `dograh-ari-manager`         | **1 fixed** | **Recreate**    | Telephony singleton |
-| `dograh-campaign-orchestrator` | **1 fixed** | **Recreate**  | Campaign singleton (in-memory locks) |
-| `dograh-ui`                  | 2 (HPA opt) | RollingUpdate   | Next.js SSR |
-| `dograh-coturn`              | 1           | Recreate        | LoadBalancer Service, port-pinned |
+| `xtel-web`                 | 2 (HPA opt) | RollingUpdate   | Long-lived WS, graceful drain |
+| `xtel-arq-worker`          | 1 (HPA opt) | RollingUpdate   | Stateless |
+| `xtel-ari-manager`         | **1 fixed** | **Recreate**    | Telephony singleton |
+| `xtel-campaign-orchestrator` | **1 fixed** | **Recreate**  | Campaign singleton (in-memory locks) |
+| `xtel-ui`                  | 2 (HPA opt) | RollingUpdate   | Next.js SSR |
+| `xtel-coturn`              | 1           | Recreate        | LoadBalancer Service, port-pinned |
 
 HTTP traffic: Gateway API (default) or Ingress (fallback).
 TURN traffic: dedicated L4 Service of type `LoadBalancer`.
@@ -120,7 +120,7 @@ volume. The remaining `/tmp` uses (`audio_file_cache.py`,
 ## Validation
 
 ```bash
-cd deploy/helm/dograh
+cd deploy/helm/xtel
 
 helm lint .
 helm template test-release . > /tmp/render-default.yaml
@@ -143,7 +143,7 @@ Spot-check expectations:
 ## Layout
 
 ```
-deploy/helm/dograh/
+deploy/helm/xtel/
 ├── Chart.yaml
 ├── values.yaml             # heavily commented
 ├── values.schema.json      # enforces mode enums

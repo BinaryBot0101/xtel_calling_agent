@@ -69,10 +69,12 @@ export function schemaDefaults(schema?: FieldSchema): Record<string, unknown> {
         .map(([name, field]) => [name, field.default]));
 }
 
+const isManagedProvider = (provider?: string) => provider === "xtel" || provider === "dograh";
+
 export function compatibleConnections(catalog: ModelConnectionCatalog, connections: ProviderConnection[], role: ServiceRole) {
     return connections.filter(connection => {
         const entry = catalog.services[role]?.[connection.provider];
-        return connection.is_active && connection.provider !== "dograh" && entry
+        return connection.is_active && !isManagedProvider(connection.provider) && entry
             && (entry.credential_required || []).every(field => connection.configured_credentials.includes(field))
             && (entry.connection_required || []).every(field => Boolean(connection.connection_settings[field]));
     });
@@ -81,13 +83,14 @@ export function compatibleConnections(catalog: ModelConnectionCatalog, connectio
 export function configurationMode(configuration: ConfigurationSpec, connections: ProviderConnection[]): ConfigurationEditorMode {
     if (configuration.mode === "realtime") return "realtime";
     const uuid = configuration.llm.provider_connection_uuid;
-    const managed = connections.find(connection => connection.uuid === uuid)?.provider === "dograh"
+    const conn = connections.find(connection => connection.uuid === uuid);
+    const managed = conn && isManagedProvider(conn.provider)
         && (["stt", "tts"] as const).every(role => configuration[role]?.provider_connection_uuid === uuid)
         && (!configuration.embeddings || configuration.embeddings.provider_connection_uuid === uuid);
-    return managed ? "dograh" : "cascade";
+    return managed ? "xtel" : "cascade";
 }
 
-export function dograhConfiguration(catalog: ModelConnectionCatalog, connection?: ProviderConnection, previous?: ConfigurationSpec, connections: ProviderConnection[] = []): ConfigurationSpec {
+export function xtelConfiguration(catalog: ModelConnectionCatalog, connection?: ProviderConnection, previous?: ConfigurationSpec, connections: ProviderConnection[] = []): ConfigurationSpec {
     const result: ConfigurationSpec = { version: 3, mode: "pipeline", llm: { provider_connection_uuid: "", settings: {} } };
     for (const role of ["llm", "stt", "tts", "embeddings"] as const) {
         result[role] = connection
@@ -99,18 +102,20 @@ export function dograhConfiguration(catalog: ModelConnectionCatalog, connection?
 
 export function selectionForConnection(catalog: ModelConnectionCatalog, role: ServiceRole, connection: ProviderConnection, previous?: ServiceSelection | null, connections: ProviderConnection[] = []): ServiceSelection {
     const oldConnection = connections.find(item => item.uuid === previous?.provider_connection_uuid);
+    const schema = catalog.services[role]?.[connection.provider]?.settings_schema
+        || (isManagedProvider(connection.provider) ? (catalog.services[role]?.xtel?.settings_schema || catalog.services[role]?.dograh?.settings_schema) : undefined);
     return {
         provider_connection_uuid: connection.uuid,
         settings: oldConnection?.provider === connection.provider
             ? { ...previous?.settings }
-            : schemaDefaults(catalog.services[role]?.[connection.provider]?.settings_schema),
+            : schemaDefaults(schema),
     };
 }
 
 export function emptyConfiguration(catalog: ModelConnectionCatalog, connections: ProviderConnection[], mode?: ConfigurationEditorMode): ConfigurationSpec {
-    const dograh = connections.find(connection => connection.is_active && connection.provider === "dograh");
-    const selectedMode = mode || (dograh ? "dograh" : "cascade");
-    if (selectedMode === "dograh") return dograhConfiguration(catalog, dograh);
+    const xtel = connections.find(connection => connection.is_active && isManagedProvider(connection.provider));
+    const selectedMode = mode || (xtel ? "xtel" : "cascade");
+    if (selectedMode === "xtel") return xtelConfiguration(catalog, xtel);
     const result: ConfigurationSpec = { version: 3, mode: selectedMode === "realtime" ? "realtime" : "pipeline", llm: { provider_connection_uuid: "", settings: {} }, embeddings: null };
     for (const role of selectedMode === "realtime" ? ["llm", "realtime"] as const : ["llm", "stt", "tts"] as const) {
         const connection = compatibleConnections(catalog, connections, role)[0];
@@ -120,10 +125,10 @@ export function emptyConfiguration(catalog: ModelConnectionCatalog, connections:
 }
 
 export function configurationForMode(mode: ConfigurationEditorMode, configuration: ConfigurationSpec, catalog: ModelConnectionCatalog, connections: ProviderConnection[]): ConfigurationSpec {
-    if (mode === "dograh") {
-        const dograh = connections.find(connection => connection.is_active && connection.provider === "dograh" && connection.uuid === configuration.llm.provider_connection_uuid)
-            || connections.find(connection => connection.is_active && connection.provider === "dograh");
-        return dograhConfiguration(catalog, dograh, configuration, connections);
+    if (mode === "xtel") {
+        const xtel = connections.find(connection => connection.is_active && isManagedProvider(connection.provider) && connection.uuid === configuration.llm.provider_connection_uuid)
+            || connections.find(connection => connection.is_active && isManagedProvider(connection.provider));
+        return xtelConfiguration(catalog, xtel, configuration, connections);
     }
     const result = emptyConfiguration(catalog, connections, mode);
     result.llm_fallback = configuration.llm_fallback;
@@ -169,7 +174,7 @@ export function cleanFallbackPolicy(policy: FallbackPolicy, catalog: ModelConnec
 export function cleanConfiguration(configuration: ConfigurationSpec, catalog: ModelConnectionCatalog, connections: ProviderConnection[]): ConfigurationSpec {
     const mode = configurationMode(configuration, connections);
     const result = { ...configuration };
-    if (mode === "dograh") {
+    if (mode === "xtel") {
         delete result.llm_fallback;
     } else if (result.llm_fallback) {
         result.llm_fallback = cleanFallbackPolicy(result.llm_fallback, catalog, connections);

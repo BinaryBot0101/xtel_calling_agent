@@ -1,6 +1,6 @@
 /**
- * Dograh Widget
- * Embeddable voice & chat widget for Dograh agents
+ * Xtel Widget
+ * Embeddable voice & chat widget for Xtel agents
  * Version: 1.1.0
  */
 
@@ -13,7 +13,7 @@
     autoStart: false,
     apiBaseUrl: window.location.hostname === 'localhost'
       ? 'http://localhost:8000'
-      : 'https://api.dograh.com'
+      : 'https://api.xtel.com'
   };
 
   // Widget state
@@ -83,9 +83,9 @@
 
   async function initializeWidget() {
     // Get token from script URL
-    const script = document.currentScript || document.querySelector('script[src*="dograh-widget.js"]');
+    const script = document.currentScript || document.querySelector('script[src*="xtel-widget.js"], script[src*="xtel-widget.js"]');
     if (!script) {
-      console.error('Dograh Widget: Script not found');
+      console.error('Xtel/Xtel Widget: Script not found');
       return;
     }
 
@@ -96,7 +96,7 @@
     const environment = scriptUrl.searchParams.get('environment');
 
     if (!token) {
-      console.error('Dograh Widget: No token found in script URL');
+      console.error('Xtel Widget: No token found in script URL');
       return;
     }
 
@@ -129,7 +129,7 @@
       // assignment (init awaits a fetch), so anything already set is merged
       // back on top rather than overwritten.
       contextVariables: {
-        ...parseContextVariables(script.getAttribute('data-dograh-context')),
+        ...parseContextVariables(script.getAttribute('data-xtel-context') || script.getAttribute('data-xtel-context')),
         ...(state.config.contextVariables || {})
       }
     };
@@ -162,7 +162,7 @@
         workflowId: configData.workflow_id,
         widgetType: widgetType,
         embedMode: configData.settings?.embedMode || 'floating',
-        containerId: configData.settings?.containerId || 'dograh-inline-container',
+        containerId: configData.settings?.containerId || (document.getElementById('xtel-inline-container') ? 'xtel-inline-container' : 'xtel-inline-container'),
         position: configData.position || DEFAULT_CONFIG.position,
         buttonColor: configData.settings?.buttonColor || '#10b981',
         buttonText: configData.settings?.buttonText || (widgetType === 'chat' ? 'Chat with Agent' : 'Talk to Agent'),
@@ -175,7 +175,7 @@
         forceTurnRelay: Boolean(configData.force_turn_relay)
       };
     } catch (error) {
-      console.error('Dograh Widget: Failed to fetch configuration', error);
+      console.error('Xtel Widget: Failed to fetch configuration', error);
       return;
     }
 
@@ -188,7 +188,7 @@
         injectChatStyles();
         createInlineChatWidget();
       } else if (state.config.embedMode === 'headless') {
-        // No UI — the host page drives chat via the window.DograhWidget API.
+        // No UI — the host page drives chat via the window.XtelWidget API.
       } else {
         injectStyles();
         injectChatStyles();
@@ -222,7 +222,7 @@
   async function startWidget(...args) {
     await init();
     if (!state.isInitialized) {
-      console.warn('Dograh Widget: Cannot start before initialization succeeds');
+      console.warn('Xtel Widget: Cannot start before initialization succeeds');
       return;
     }
     return isChatWidget() ? startChat() : startCall(...args);
@@ -235,7 +235,7 @@
   async function endWidget(...args) {
     await init();
     if (!state.isInitialized) {
-      console.warn('Dograh Widget: Cannot end before initialization succeeds');
+      console.warn('Xtel Widget: Cannot end before initialization succeeds');
       return;
     }
     return isChatWidget() ? endChatSession() : stopCall(...args);
@@ -249,7 +249,7 @@
     try {
       return JSON.parse(contextStr);
     } catch (e) {
-      console.warn('Dograh Widget: Invalid context variables', e);
+      console.warn('Xtel Widget: Invalid context variables', e);
       return {};
     }
   }
@@ -262,7 +262,7 @@
   function widgetText(key) {
     const value = state.config.texts && state.config.texts[key];
     if (typeof value !== 'string') {
-      console.warn(`Dograh Widget: no text supplied for "${key}"`);
+      console.warn(`Xtel Widget: no text supplied for "${key}"`);
       return '';
     }
     return value;
@@ -286,7 +286,7 @@
    */
   function setContextVariables(vars) {
     if (!vars || typeof vars !== 'object' || Array.isArray(vars)) {
-      console.warn('Dograh Widget: setContext expects a plain object');
+      console.warn('Xtel Widget: setContext expects a plain object');
       return { ...(state.config.contextVariables || {}) };
     }
 
@@ -296,7 +296,7 @@
     };
 
     if (isConversationActive()) {
-      console.warn('Dograh Widget: context set during a conversation applies to the next one');
+      console.warn('Xtel Widget: context set during a conversation applies to the next one');
     }
 
     return { ...state.config.contextVariables };
@@ -306,36 +306,36 @@
    * Inject widget styles
    */
   function injectStyles() {
-    if (document.getElementById('dograh-widget-styles')) return;
+    if (document.getElementById('xtel-widget-styles')) return;
 
     const styles = `
-      .dograh-widget-container {
+      .xtel-widget-container {
         position: fixed;
         z-index: 999999;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       }
 
-      .dograh-widget-container.bottom-right {
+      .xtel-widget-container.bottom-right {
         bottom: 20px;
         right: 20px;
       }
 
-      .dograh-widget-container.bottom-left {
+      .xtel-widget-container.bottom-left {
         bottom: 20px;
         left: 20px;
       }
 
-      .dograh-widget-container.top-right {
+      .xtel-widget-container.top-right {
         top: 20px;
         right: 20px;
       }
 
-      .dograh-widget-container.top-left {
+      .xtel-widget-container.top-left {
         top: 20px;
         left: 20px;
       }
 
-      .dograh-widget-cta {
+      .xtel-widget-cta {
         display: inline-flex;
         align-items: center;
         gap: 8px;
@@ -350,33 +350,33 @@
         max-width: calc(100vw - 40px);
         box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
         transition: filter 150ms ease, transform 100ms ease, box-shadow 200ms ease;
-        animation: dograh-cta-in 220ms ease-out;
+        animation: xtel-cta-in 220ms ease-out;
       }
 
-      .dograh-widget-cta:hover {
+      .xtel-widget-cta:hover {
         color: #ffffff !important;
         filter: brightness(1.08);
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
       }
-      .dograh-widget-cta:active { transform: scale(0.98); }
+      .xtel-widget-cta:active { transform: scale(0.98); }
 
-      .dograh-widget-cta.dograh-state-connecting { background: #f59e0b !important; animation: dograh-pulse 1.6s infinite; }
-      .dograh-widget-cta.dograh-state-connected  { background: #ef4444 !important; }
-      .dograh-widget-cta.dograh-state-failed     { background: #ef4444 !important; opacity: 0.85; }
+      .xtel-widget-cta.xtel-state-connecting { background: #f59e0b !important; animation: xtel-pulse 1.6s infinite; }
+      .xtel-widget-cta.xtel-state-connected  { background: #ef4444 !important; }
+      .xtel-widget-cta.xtel-state-failed     { background: #ef4444 !important; opacity: 0.85; }
 
-      @keyframes dograh-pulse {
+      @keyframes xtel-pulse {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.6; }
       }
 
-      @keyframes dograh-cta-in {
+      @keyframes xtel-cta-in {
         from { opacity: 0; transform: translateY(8px); }
         to { opacity: 1; transform: translateY(0); }
       }
     `;
 
     const styleSheet = document.createElement('style');
-    styleSheet.id = 'dograh-widget-styles';
+    styleSheet.id = 'xtel-widget-styles';
     styleSheet.textContent = styles;
     document.head.appendChild(styleSheet);
   }
@@ -396,11 +396,11 @@
    */
   function createFloatingWidget() {
     const container = document.createElement('div');
-    container.className = `dograh-widget-container ${state.config.position}`;
-    container.id = 'dograh-widget-root';
+    container.className = `xtel-widget-container ${state.config.position}`;
+    container.id = 'xtel-widget-root';
 
     const audio = document.createElement('audio');
-    audio.id = 'dograh-widget-audio';
+    audio.id = 'xtel-widget-audio';
     audio.autoplay = true;
     audio.style.display = 'none';
     container.appendChild(audio);
@@ -415,7 +415,7 @@
    * element so an in-progress call is not interrupted on status changes.
    */
   function renderFloating() {
-    const container = document.getElementById('dograh-widget-root');
+    const container = document.getElementById('xtel-widget-root');
     if (!container) return;
 
     Array.from(container.children).forEach((child) => {
@@ -425,9 +425,9 @@
     const status = state.connectionStatus || 'idle';
 
     const button = document.createElement('button');
-    button.id = 'dograh-widget-cta';
+    button.id = 'xtel-widget-cta';
     button.type = 'button';
-    button.className = `dograh-widget-cta dograh-state-${status}`;
+    button.className = `xtel-widget-cta xtel-state-${status}`;
     // Idle uses configured color; status states use CSS-defined colors.
     if (status === 'idle') {
       button.style.backgroundColor = state.config.buttonColor;
@@ -448,11 +448,11 @@
   }
 
   /**
-   * Create headless widget (no UI — host page drives everything via window.DograhWidget API)
+   * Create headless widget (no UI — host page drives everything via window.XtelWidget API)
    */
   function createHeadlessWidget() {
     const audio = document.createElement('audio');
-    audio.id = 'dograh-widget-audio';
+    audio.id = 'xtel-widget-audio';
     audio.autoplay = true;
     audio.style.display = 'none';
     document.body.appendChild(audio);
@@ -480,9 +480,9 @@
    */
   function createInlineWidget() {
     // Find container element
-    const container = document.getElementById(state.config.containerId);
+    const container = document.getElementById(state.config.containerId) || document.getElementById('xtel-inline-container') || document.getElementById('xtel-inline-container');
     if (!container) {
-      console.error(`Dograh Widget: Container element with id "${state.config.containerId}" not found`);
+      console.error(`Widget: Container element with id "${state.config.containerId}" not found`);
       if (state.callbacks.onError) {
         state.callbacks.onError(new Error('Container element not found'));
       }
@@ -491,11 +491,11 @@
 
     // Clear container
     container.innerHTML = '';
-    container.className = 'dograh-inline-container';
+    container.className = 'xtel-inline-container';
 
     // Add minimal inline styles
     const inlineStyles = `
-      .dograh-inline-container {
+      .xtel-inline-container {
         min-height: 200px;
         padding: 20px;
         display: flex;
@@ -503,12 +503,12 @@
         justify-content: center;
       }
 
-      .dograh-inline-status {
+      .xtel-inline-status {
         text-align: center;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       }
 
-      .dograh-inline-status-icon {
+      .xtel-inline-status-icon {
         width: 64px;
         height: 64px;
         margin: 0 auto 20px;
@@ -516,27 +516,27 @@
 
       /* Inherit the host page's text color: this panel sits directly in their
          content, so a hardcoded near-black heading disappears on a dark site. */
-      .dograh-inline-status-text {
+      .xtel-inline-status-text {
         font-size: 18px;
         font-weight: 500;
         margin: 0 0 8px;
         color: inherit;
       }
 
-      .dograh-inline-status-subtext {
+      .xtel-inline-status-subtext {
         font-size: 14px;
         color: #6b7280;
         margin: 0 0 20px;
       }
 
-      .dograh-inline-button-container {
+      .xtel-inline-button-container {
         display: flex;
         gap: 12px;
         justify-content: center;
         margin-top: 20px;
       }
 
-      .dograh-inline-btn {
+      .xtel-inline-btn {
         padding: 12px 32px;
         border-radius: 8px;
         border: none;
@@ -550,33 +550,33 @@
 
       /* Host pages commonly style button:hover, which out-specifies the color
          above and can repaint the label to match its own background — the same
-         reason .dograh-widget-cta:hover pins its color. */
-      .dograh-inline-btn:hover {
+         reason .xtel-widget-cta:hover pins its color. */
+      .xtel-inline-btn:hover {
         color: #ffffff !important;
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       }
 
-      .dograh-inline-btn:active {
+      .xtel-inline-btn:active {
         transform: translateY(0);
       }
 
-      .dograh-inline-btn-start {
+      .xtel-inline-btn-start {
         background: #10b981;
       }
 
       /* The start button carries the owner's configured color as an inline
          style, so a fixed hover background would never apply — brighten
          whatever color it has instead. */
-      .dograh-inline-btn-start:hover {
+      .xtel-inline-btn-start:hover {
         filter: brightness(1.08);
       }
 
-      .dograh-inline-btn-end {
+      .xtel-inline-btn-end {
         background: #ef4444;
       }
 
-      .dograh-inline-btn-end:hover {
+      .xtel-inline-btn-end:hover {
         background: #dc2626;
       }
 
@@ -585,15 +585,15 @@
         50% { opacity: 0.5; }
       }
 
-      .dograh-inline-pulse {
+      .xtel-inline-pulse {
         animation: pulse 2s infinite;
       }
     `;
 
     // Add inline styles if not already added
-    if (!document.getElementById('dograh-inline-styles')) {
+    if (!document.getElementById('xtel-inline-styles')) {
       const styleSheet = document.createElement('style');
-      styleSheet.id = 'dograh-inline-styles';
+      styleSheet.id = 'xtel-inline-styles';
       styleSheet.textContent = inlineStyles;
       document.head.appendChild(styleSheet);
     }
@@ -641,29 +641,29 @@
     // below rather than interpolated into this markup.
     let buttonHTML = '';
     if (status === 'idle' || status === 'failed') {
-      buttonHTML = '<button class="dograh-inline-btn dograh-inline-btn-start" id="dograh-inline-start-btn"></button>';
+      buttonHTML = '<button class="xtel-inline-btn xtel-inline-btn-start" id="xtel-inline-start-btn"></button>';
     } else if (status === 'connecting' || status === 'connected') {
-      buttonHTML = '<button class="dograh-inline-btn dograh-inline-btn-end" id="dograh-inline-end-btn"></button>';
+      buttonHTML = '<button class="xtel-inline-btn xtel-inline-btn-end" id="xtel-inline-end-btn"></button>';
     }
 
     // Update container content (preserve audio element)
     const audioElement = state.audioElement;
     container.innerHTML = `
-      <div class="dograh-inline-status">
-        <div class="dograh-inline-status-icon ${status === 'connecting' ? 'dograh-inline-pulse' : ''}">
+      <div class="xtel-inline-status">
+        <div class="xtel-inline-status-icon ${status === 'connecting' ? 'xtel-inline-pulse' : ''}">
           ${getStatusIcon(status)}
         </div>
-        <p class="dograh-inline-status-text"></p>
-        <p class="dograh-inline-status-subtext"></p>
-        <div class="dograh-inline-button-container">
+        <p class="xtel-inline-status-text"></p>
+        <p class="xtel-inline-status-subtext"></p>
+        <div class="xtel-inline-button-container">
           ${buttonHTML}
         </div>
       </div>
     `;
 
     // XSS boundary: configured copy only ever flows through textContent
-    container.querySelector('.dograh-inline-status-text').textContent = displayText;
-    container.querySelector('.dograh-inline-status-subtext').textContent = displaySubtext;
+    container.querySelector('.xtel-inline-status-text').textContent = displayText;
+    container.querySelector('.xtel-inline-status-subtext').textContent = displaySubtext;
 
     // Re-append audio element
     if (audioElement) {
@@ -671,14 +671,14 @@
     }
 
     // Attach event handlers
-    const startBtn = document.getElementById('dograh-inline-start-btn');
+    const startBtn = document.getElementById('xtel-inline-start-btn');
     if (startBtn) {
       startBtn.textContent = status === 'failed' ? widgetText('voiceRetryText') : state.config.buttonText;
       startBtn.style.background = state.config.buttonColor;
       startBtn.onclick = startCall;
     }
 
-    const endBtn = document.getElementById('dograh-inline-end-btn');
+    const endBtn = document.getElementById('xtel-inline-end-btn');
     if (endBtn) {
       endBtn.textContent = widgetText('voiceEndCallText');
       endBtn.onclick = stopCall;
@@ -701,7 +701,7 @@
         <line x1="12" y1="19" x2="12" y2="23"/>
         <line x1="8" y1="23" x2="16" y2="23"/>
       </svg>`,
-      connecting: `<svg class="dograh-widget-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      connecting: `<svg class="xtel-widget-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M12 2v4"/>
         <path d="M12 18v4"/>
         <path d="M4.93 4.93l2.83 2.83"/>
@@ -815,7 +815,7 @@
       await negotiate();
 
     } catch (error) {
-      console.error('Dograh Widget: Failed to start call', error);
+      console.error('Xtel Widget: Failed to start call', error);
 
       // Release anything acquired before the failure so a retry starts clean.
       // getUserMedia may have succeeded before a later step (WebSocket /
@@ -892,12 +892,12 @@
     // configured — it would only 503. Deployments without coturn (OSS/local)
     // fall back to STUN.
     if (state.config.turnEnabled === false) {
-      console.log('Dograh Widget: TURN server disabled in server config, using STUN only');
+      console.log('Xtel Widget: TURN server disabled in server config, using STUN only');
       return;
     }
 
     if (!state.sessionToken) {
-      console.warn('Dograh Widget: No session token available for TURN credentials');
+      console.warn('Xtel Widget: No session token available for TURN credentials');
       return;
     }
 
@@ -950,7 +950,7 @@
     // fetch) leaves no ICE servers at all — no candidates, and no clue why.
     if (state.config.forceTurnRelay && iceServers.length === 0) {
       console.error(
-        'Dograh Widget: FORCE_TURN_RELAY is on but no TURN credentials are ' +
+        'Xtel Widget: FORCE_TURN_RELAY is on but no TURN credentials are ' +
         'available — ICE has no candidates to gather and this call cannot connect.'
       );
     }
@@ -965,7 +965,7 @@
     // falling back to host/srflx.
     if (state.config.forceTurnRelay) {
       config.iceTransportPolicy = 'relay';
-      console.log('Dograh Widget: FORCE_TURN_RELAY is on — restricting ICE to relay candidates only');
+      console.log('Xtel Widget: FORCE_TURN_RELAY is on — restricting ICE to relay candidates only');
     }
 
     state.pc = new RTCPeerConnection(config);
@@ -1272,10 +1272,10 @@
    * Inject chat widget styles
    */
   function injectChatStyles() {
-    if (document.getElementById('dograh-chat-styles')) return;
+    if (document.getElementById('xtel-chat-styles')) return;
 
     const styles = `
-      .dograh-chat-panel {
+      .xtel-chat-panel {
         display: flex;
         flex-direction: column;
         width: 360px;
@@ -1287,13 +1287,13 @@
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       }
 
-      .dograh-widget-container.bottom-right .dograh-chat-panel { position: absolute; bottom: 60px; right: 0; }
-      .dograh-widget-container.bottom-left  .dograh-chat-panel { position: absolute; bottom: 60px; left: 0; }
-      .dograh-widget-container.top-right    .dograh-chat-panel { position: absolute; top: 60px; right: 0; }
-      .dograh-widget-container.top-left     .dograh-chat-panel { position: absolute; top: 60px; left: 0; }
+      .xtel-widget-container.bottom-right .xtel-chat-panel { position: absolute; bottom: 60px; right: 0; }
+      .xtel-widget-container.bottom-left  .xtel-chat-panel { position: absolute; bottom: 60px; left: 0; }
+      .xtel-widget-container.top-right    .xtel-chat-panel { position: absolute; top: 60px; right: 0; }
+      .xtel-widget-container.top-left     .xtel-chat-panel { position: absolute; top: 60px; left: 0; }
 
       @media (max-width: 480px) {
-        .dograh-widget-container .dograh-chat-panel {
+        .xtel-widget-container .xtel-chat-panel {
           position: fixed;
           left: 0;
           right: 0;
@@ -1305,7 +1305,7 @@
         }
       }
 
-      .dograh-chat-panel--inline {
+      .xtel-chat-panel--inline {
         position: static;
         width: 100%;
         height: 100%;
@@ -1314,7 +1314,7 @@
         border: 1px solid #e5e7eb;
       }
 
-      .dograh-chat-header {
+      .xtel-chat-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -1325,21 +1325,21 @@
         flex: 0 0 auto;
       }
 
-      .dograh-chat-header-title {
+      .xtel-chat-header-title {
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
 
-      .dograh-chat-header-actions {
+      .xtel-chat-header-actions {
         display: inline-flex;
         align-items: center;
         gap: 8px;
         margin-left: 12px;
       }
 
-      .dograh-chat-end {
+      .xtel-chat-end {
         display: none;
         border: 1px solid rgba(255, 255, 255, 0.55);
         border-radius: 6px;
@@ -1353,10 +1353,10 @@
         padding: 6px 8px;
         white-space: nowrap;
       }
-      .dograh-chat-end:hover { background: rgba(0, 0, 0, 0.22); }
-      .dograh-chat-end:disabled { cursor: default; opacity: 0.55; }
+      .xtel-chat-end:hover { background: rgba(0, 0, 0, 0.22); }
+      .xtel-chat-end:disabled { cursor: default; opacity: 0.55; }
 
-      .dograh-chat-end-confirmation {
+      .xtel-chat-end-confirmation {
         display: none;
         align-items: center;
         justify-content: space-between;
@@ -1369,14 +1369,14 @@
         font-weight: 500;
         flex: 0 0 auto;
       }
-      .dograh-chat-end-confirm-actions {
+      .xtel-chat-end-confirm-actions {
         display: inline-flex;
         align-items: center;
         gap: 6px;
         flex: 0 0 auto;
       }
-      .dograh-chat-end-confirm-cancel,
-      .dograh-chat-end-confirm-submit {
+      .xtel-chat-end-confirm-cancel,
+      .xtel-chat-end-confirm-submit {
         border-radius: 6px;
         font: inherit;
         font-size: 12px;
@@ -1386,24 +1386,24 @@
         padding: 6px 8px;
         white-space: nowrap;
       }
-      .dograh-chat-end-confirm-cancel {
+      .xtel-chat-end-confirm-cancel {
         border: 1px solid #d1d5db;
         background: #ffffff;
         color: #374151;
       }
-      .dograh-chat-end-confirm-cancel:hover { background: #f9fafb; }
-      .dograh-chat-end-confirm-submit {
+      .xtel-chat-end-confirm-cancel:hover { background: #f9fafb; }
+      .xtel-chat-end-confirm-submit {
         border: 1px solid #dc2626;
         background: #dc2626;
         color: #ffffff;
       }
-      .dograh-chat-end-confirm-submit:hover {
+      .xtel-chat-end-confirm-submit:hover {
         border-color: #b91c1c;
         background: #b91c1c;
         color: #ffffff;
       }
 
-      .dograh-chat-close {
+      .xtel-chat-close {
         background: none;
         border: none;
         color: #ffffff;
@@ -1413,9 +1413,9 @@
         padding: 0 2px;
         opacity: 0.85;
       }
-      .dograh-chat-close:hover { opacity: 1; }
+      .xtel-chat-close:hover { opacity: 1; }
 
-      .dograh-chat-messages {
+      .xtel-chat-messages {
         flex: 1 1 auto;
         overflow-y: auto;
         padding: 16px;
@@ -1425,7 +1425,7 @@
         background: #f9fafb;
       }
 
-      .dograh-chat-bubble {
+      .xtel-chat-bubble {
         max-width: 80%;
         padding: 8px 12px;
         border-radius: 12px;
@@ -1434,20 +1434,20 @@
         white-space: pre-wrap;
         word-break: break-word;
       }
-      .dograh-chat-bubble--user {
+      .xtel-chat-bubble--user {
         align-self: flex-end;
         color: #ffffff;
         border-bottom-right-radius: 4px;
       }
-      .dograh-chat-bubble--assistant {
+      .xtel-chat-bubble--assistant {
         align-self: flex-start;
         background: #e5e7eb;
         color: #111827;
         border-bottom-left-radius: 4px;
       }
-      .dograh-chat-bubble--failed { opacity: 0.55; }
+      .xtel-chat-bubble--failed { opacity: 0.55; }
 
-      .dograh-chat-typing {
+      .xtel-chat-typing {
         align-self: flex-start;
         display: inline-flex;
         gap: 4px;
@@ -1456,22 +1456,22 @@
         border-radius: 12px;
         border-bottom-left-radius: 4px;
       }
-      .dograh-chat-typing span {
+      .xtel-chat-typing span {
         width: 6px;
         height: 6px;
         border-radius: 50%;
         background: #6b7280;
-        animation: dograh-typing 1.2s infinite;
+        animation: xtel-typing 1.2s infinite;
       }
-      .dograh-chat-typing span:nth-child(2) { animation-delay: 0.15s; }
-      .dograh-chat-typing span:nth-child(3) { animation-delay: 0.3s; }
+      .xtel-chat-typing span:nth-child(2) { animation-delay: 0.15s; }
+      .xtel-chat-typing span:nth-child(3) { animation-delay: 0.3s; }
 
-      @keyframes dograh-typing {
+      @keyframes xtel-typing {
         0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
         30% { opacity: 1; transform: translateY(-3px); }
       }
 
-      .dograh-chat-banner {
+      .xtel-chat-banner {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -1483,12 +1483,12 @@
         border-top: 1px solid #fecaca;
         flex: 0 0 auto;
       }
-      .dograh-chat-banner--info {
+      .xtel-chat-banner--info {
         color: #374151;
         background: #f3f4f6;
         border-top: 1px solid #e5e7eb;
       }
-      .dograh-chat-restart {
+      .xtel-chat-restart {
         border: none;
         background: none;
         color: #1d4ed8;
@@ -1499,7 +1499,7 @@
         white-space: nowrap;
       }
 
-      .dograh-chat-composer {
+      .xtel-chat-composer {
         display: flex;
         align-items: flex-end;
         gap: 8px;
@@ -1514,7 +1514,7 @@
          line-height (font: inherit picks up the host's, which is what makes
          the two sides disagree). 20 + 8*2 padding + 1*2 border = 38, the
          shared height below. */
-      .dograh-chat-input {
+      .xtel-chat-input {
         flex: 1;
         box-sizing: border-box;
         resize: none;
@@ -1530,9 +1530,9 @@
         background: #ffffff;
         color: #111827;
       }
-      .dograh-chat-input:focus { border-color: #9ca3af; }
-      .dograh-chat-input:disabled { background: #f9fafb; color: #9ca3af; }
-      .dograh-chat-send {
+      .xtel-chat-input:focus { border-color: #9ca3af; }
+      .xtel-chat-input:disabled { background: #f9fafb; color: #9ca3af; }
+      .xtel-chat-send {
         box-sizing: border-box;
         width: 38px;
         height: 38px;
@@ -1546,32 +1546,32 @@
         justify-content: center;
         flex: 0 0 auto;
       }
-      .dograh-chat-send svg {
+      .xtel-chat-send svg {
         display: block;
         width: 16px;
         height: 16px;
         flex: 0 0 auto;
       }
-      .dograh-chat-send:disabled { opacity: 0.5; cursor: default; }
+      .xtel-chat-send:disabled { opacity: 0.5; cursor: default; }
 
-      .dograh-chat-inline-container {
+      .xtel-chat-inline-container {
         display: flex;
         align-items: center;
         justify-content: center;
         min-height: 420px;
       }
-      .dograh-chat-inline-cta {
+      .xtel-chat-inline-cta {
         text-align: center;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       }
-      .dograh-chat-inline-icon { color: #9ca3af; margin-bottom: 16px; }
-      .dograh-chat-inline-icon svg { width: 56px; height: 56px; }
-      .dograh-chat-inline-subtext {
+      .xtel-chat-inline-icon { color: #9ca3af; margin-bottom: 16px; }
+      .xtel-chat-inline-icon svg { width: 56px; height: 56px; }
+      .xtel-chat-inline-subtext {
         font-size: 14px;
         color: #6b7280;
         margin: 0 0 20px;
       }
-      .dograh-chat-inline-start {
+      .xtel-chat-inline-start {
         padding: 12px 32px;
         border-radius: 8px;
         border: none;
@@ -1581,21 +1581,21 @@
         color: #ffffff;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
       }
-      .dograh-chat-inline-start:hover { filter: brightness(1.08); }
+      .xtel-chat-inline-start:hover { filter: brightness(1.08); }
 
       /* A host page's own button:hover rule out-specifies the colors set above
          and can repaint a label to match its background, hiding it. Pin every
          button color we own against that. */
-      .dograh-chat-end:hover,
-      .dograh-chat-close:hover,
-      .dograh-chat-send:hover,
-      .dograh-chat-inline-start:hover { color: #ffffff !important; }
-      .dograh-chat-end-confirm-cancel:hover { color: #374151 !important; }
-      .dograh-chat-restart:hover { color: #1d4ed8 !important; }
+      .xtel-chat-end:hover,
+      .xtel-chat-close:hover,
+      .xtel-chat-send:hover,
+      .xtel-chat-inline-start:hover { color: #ffffff !important; }
+      .xtel-chat-end-confirm-cancel:hover { color: #374151 !important; }
+      .xtel-chat-restart:hover { color: #1d4ed8 !important; }
     `;
 
     const styleSheet = document.createElement('style');
-    styleSheet.id = 'dograh-chat-styles';
+    styleSheet.id = 'xtel-chat-styles';
     styleSheet.textContent = styles;
     document.head.appendChild(styleSheet);
   }
@@ -1608,24 +1608,24 @@
     const withClose = Boolean(options && options.withClose);
 
     const panel = document.createElement('div');
-    panel.className = 'dograh-chat-panel';
+    panel.className = 'xtel-chat-panel';
 
     const header = document.createElement('div');
-    header.className = 'dograh-chat-header';
+    header.className = 'xtel-chat-header';
     header.style.backgroundColor = state.config.buttonColor;
     const title = document.createElement('span');
-    title.className = 'dograh-chat-header-title';
+    title.className = 'xtel-chat-header-title';
     title.textContent = state.config.buttonText || 'Chat with Agent';
     header.appendChild(title);
 
     const headerActions = document.createElement('div');
-    headerActions.className = 'dograh-chat-header-actions';
+    headerActions.className = 'xtel-chat-header-actions';
 
     const endBtn = document.createElement('button');
-    endBtn.className = 'dograh-chat-end';
+    endBtn.className = 'xtel-chat-end';
     endBtn.type = 'button';
     endBtn.textContent = widgetText('endChatText');
-    endBtn.setAttribute('aria-controls', 'dograh-chat-end-confirmation');
+    endBtn.setAttribute('aria-controls', 'xtel-chat-end-confirmation');
     endBtn.setAttribute('aria-expanded', 'false');
     endBtn.onclick = () => {
       state.chat.confirmingEnd = true;
@@ -1636,7 +1636,7 @@
 
     if (withClose) {
       const closeBtn = document.createElement('button');
-      closeBtn.className = 'dograh-chat-close';
+      closeBtn.className = 'xtel-chat-close';
       closeBtn.type = 'button';
       closeBtn.setAttribute('aria-label', widgetText('closeChatLabel'));
       closeBtn.textContent = '×';
@@ -1647,8 +1647,8 @@
     panel.appendChild(header);
 
     const endConfirmation = document.createElement('div');
-    endConfirmation.id = 'dograh-chat-end-confirmation';
-    endConfirmation.className = 'dograh-chat-end-confirmation';
+    endConfirmation.id = 'xtel-chat-end-confirmation';
+    endConfirmation.className = 'xtel-chat-end-confirmation';
     endConfirmation.setAttribute('role', 'group');
     endConfirmation.setAttribute('aria-label', 'Confirm ending chat');
 
@@ -1657,10 +1657,10 @@
     endConfirmation.appendChild(endConfirmationText);
 
     const endConfirmActions = document.createElement('div');
-    endConfirmActions.className = 'dograh-chat-end-confirm-actions';
+    endConfirmActions.className = 'xtel-chat-end-confirm-actions';
 
     const cancelEndBtn = document.createElement('button');
-    cancelEndBtn.className = 'dograh-chat-end-confirm-cancel';
+    cancelEndBtn.className = 'xtel-chat-end-confirm-cancel';
     cancelEndBtn.type = 'button';
     cancelEndBtn.textContent = widgetText('endChatCancelText');
     cancelEndBtn.onclick = () => {
@@ -1673,7 +1673,7 @@
     endConfirmActions.appendChild(cancelEndBtn);
 
     const confirmEndBtn = document.createElement('button');
-    confirmEndBtn.className = 'dograh-chat-end-confirm-submit';
+    confirmEndBtn.className = 'xtel-chat-end-confirm-submit';
     confirmEndBtn.type = 'button';
     confirmEndBtn.textContent = widgetText('endChatText');
     confirmEndBtn.onclick = () => {
@@ -1685,18 +1685,18 @@
     panel.appendChild(endConfirmation);
 
     const messages = document.createElement('div');
-    messages.className = 'dograh-chat-messages';
+    messages.className = 'xtel-chat-messages';
     panel.appendChild(messages);
 
     const banner = document.createElement('div');
-    banner.className = 'dograh-chat-banner';
+    banner.className = 'xtel-chat-banner';
     banner.style.display = 'none';
     panel.appendChild(banner);
 
     const composer = document.createElement('div');
-    composer.className = 'dograh-chat-composer';
+    composer.className = 'xtel-chat-composer';
     const input = document.createElement('textarea');
-    input.className = 'dograh-chat-input';
+    input.className = 'xtel-chat-input';
     input.rows = 1;
     input.placeholder = widgetText('chatInputPlaceholder');
     input.oninput = () => {
@@ -1710,7 +1710,7 @@
       }
     };
     const sendBtn = document.createElement('button');
-    sendBtn.className = 'dograh-chat-send';
+    sendBtn.className = 'xtel-chat-send';
     sendBtn.type = 'button';
     sendBtn.style.backgroundColor = state.config.buttonColor;
     sendBtn.setAttribute('aria-label', widgetText('sendMessageLabel'));
@@ -1737,7 +1737,7 @@
     // scrollHeight covers content + padding but not borders, and the input is
     // border-box — without adding them back the first keystroke shrinks the
     // box by 2px and clips the text.
-    const BORDER_Y = 2; // 1px top + 1px bottom, matches .dograh-chat-input
+    const BORDER_Y = 2; // 1px top + 1px bottom, matches .xtel-chat-input
     input.style.height = 'auto';
     input.style.height = Math.min(input.scrollHeight + BORDER_Y, 96) + 'px';
   }
@@ -1747,8 +1747,8 @@
    */
   function createFloatingChatWidget() {
     const container = document.createElement('div');
-    container.className = `dograh-widget-container ${state.config.position}`;
-    container.id = 'dograh-widget-root';
+    container.className = `xtel-widget-container ${state.config.position}`;
+    container.id = 'xtel-widget-root';
     document.body.appendChild(container);
 
     const panel = buildChatPanel({ withClose: true });
@@ -1756,9 +1756,9 @@
     container.appendChild(panel);
 
     const button = document.createElement('button');
-    button.id = 'dograh-widget-cta';
+    button.id = 'xtel-widget-cta';
     button.type = 'button';
-    button.className = 'dograh-widget-cta';
+    button.className = 'xtel-widget-cta';
     button.style.backgroundColor = state.config.buttonColor;
     button.innerHTML = `${CHAT_ICON_SVG}<span></span>`;
     button.querySelector('span').textContent = state.config.buttonText || 'Chat with Agent';
@@ -1771,9 +1771,9 @@
    * CTA, autoStart, and public API all open the same panel/session lifecycle.
    */
   function createInlineChatWidget() {
-    const container = document.getElementById(state.config.containerId);
+    const container = document.getElementById(state.config.containerId) || document.getElementById('xtel-inline-container') || document.getElementById('xtel-inline-container');
     if (!container) {
-      console.error(`Dograh Widget: Container element with id "${state.config.containerId}" not found`);
+      console.error(`Widget: Container element with id "${state.config.containerId}" not found`);
       if (state.callbacks.onError) {
         state.callbacks.onError(new Error('Container element not found'));
       }
@@ -1781,23 +1781,23 @@
     }
 
     container.innerHTML = '';
-    container.className = 'dograh-chat-inline-container';
+    container.className = 'xtel-chat-inline-container';
 
     const cta = document.createElement('div');
-    cta.className = 'dograh-chat-inline-cta';
+    cta.className = 'xtel-chat-inline-cta';
 
     const icon = document.createElement('div');
-    icon.className = 'dograh-chat-inline-icon';
+    icon.className = 'xtel-chat-inline-icon';
     icon.innerHTML = CHAT_ICON_SVG; // static markup
     cta.appendChild(icon);
 
     const subtext = document.createElement('p');
-    subtext.className = 'dograh-chat-inline-subtext';
+    subtext.className = 'xtel-chat-inline-subtext';
     subtext.textContent = state.config.callToActionText || 'Click to start chatting';
     cta.appendChild(subtext);
 
     const startBtn = document.createElement('button');
-    startBtn.className = 'dograh-chat-inline-start';
+    startBtn.className = 'xtel-chat-inline-start';
     startBtn.type = 'button';
     startBtn.style.backgroundColor = state.config.buttonColor;
     startBtn.textContent = state.config.buttonText || 'Chat with Agent';
@@ -1814,20 +1814,20 @@
    * session behind the CTA.
    */
   function openInlineChatPanel() {
-    const container = document.getElementById(state.config.containerId);
+    const container = document.getElementById(state.config.containerId) || document.getElementById('xtel-inline-container') || document.getElementById('xtel-inline-container');
     if (!container) {
-      console.error(`Dograh Widget: Container element with id "${state.config.containerId}" not found`);
+      console.error(`Widget: Container element with id "${state.config.containerId}" not found`);
       return false;
     }
 
-    const cta = container.querySelector('.dograh-chat-inline-cta');
+    const cta = container.querySelector('.xtel-chat-inline-cta');
     if (cta) {
       cta.remove();
     }
 
     if (!state.chatEls || !state.chatEls.panel || !container.contains(state.chatEls.panel)) {
       const panel = buildChatPanel({ withClose: false });
-      panel.classList.add('dograh-chat-panel--inline');
+      panel.classList.add('xtel-chat-panel--inline');
       container.appendChild(panel);
     }
 
@@ -1856,7 +1856,7 @@
    */
   async function startChat() {
     if (!isChatWidget()) {
-      console.warn('Dograh Widget: startChat() called on a voice widget');
+      console.warn('Xtel Widget: startChat() called on a voice widget');
       return;
     }
     if (state.config.embedMode === 'inline' && !openInlineChatPanel()) {
@@ -1929,7 +1929,7 @@
       await readChatStream(response);
       finishChatResponse();
     } catch (error) {
-      console.error('Dograh Widget: Failed to start chat', error);
+      console.error('Xtel Widget: Failed to start chat', error);
       if (state.sessionToken) {
         await recoverChatSession();
       } else {
@@ -2080,11 +2080,11 @@
     const trimmed = (text || '').trim();
     if (!trimmed) return null;
     if (!isChatWidget()) {
-      console.warn('Dograh Widget: sendMessage() called on a voice widget');
+      console.warn('Xtel Widget: sendMessage() called on a voice widget');
       return null;
     }
     if (!state.sessionToken || state.chat.status === 'ended' || state.chat.status === 'expired') {
-      console.warn('Dograh Widget: no active chat session');
+      console.warn('Xtel Widget: no active chat session');
       return null;
     }
     if (state.chat.status === 'waiting' || state.chat.status === 'starting' || state.chat.status === 'recovering') {
@@ -2150,7 +2150,7 @@
       }
       throw new Error(`Chat message failed: ${response.status}`);
     } catch (error) {
-      console.error('Dograh Widget: Failed to send message', error);
+      console.error('Xtel Widget: Failed to send message', error);
       state.chat.pendingUserText = null;
       await recoverChatSession();
       if (state.callbacks.onError) {
@@ -2173,7 +2173,7 @@
       return null;
     }
     if (!isChatWidget()) {
-      console.warn('Dograh Widget: endChat() called on a voice widget');
+      console.warn('Xtel Widget: endChat() called on a voice widget');
       return null;
     }
     if (!state.sessionToken || state.chat.status === 'ended' || state.chat.status === 'expired') {
@@ -2226,7 +2226,7 @@
       }
       throw new Error(`Failed to end chat: ${response.status}`);
     } catch (error) {
-      console.error('Dograh Widget: Failed to end chat', error);
+      console.error('Xtel Widget: Failed to end chat', error);
       state.chat.ending = false;
       updateChatStatus('ready', 'Could not end the chat. Please try again.');
       if (state.callbacks.onError) {
@@ -2259,7 +2259,7 @@
         state.chat.status = 'expired';
       }
     } catch (error) {
-      console.warn('Dograh Widget: chat resync failed', error);
+      console.warn('Xtel Widget: chat resync failed', error);
     }
     return false;
   }
@@ -2321,7 +2321,7 @@
     }
     if (state.chat.status === 'waiting' || state.chat.status === 'starting') {
       const typing = document.createElement('div');
-      typing.className = 'dograh-chat-typing';
+      typing.className = 'xtel-chat-typing';
       typing.innerHTML = '<span></span><span></span><span></span>';
       messages.appendChild(typing);
     }
@@ -2333,7 +2333,7 @@
 
   function buildChatBubble(text, role, failed) {
     const bubble = document.createElement('div');
-    bubble.className = `dograh-chat-bubble dograh-chat-bubble--${role}${failed ? ' dograh-chat-bubble--failed' : ''}`;
+    bubble.className = `xtel-chat-bubble xtel-chat-bubble--${role}${failed ? ' xtel-chat-bubble--failed' : ''}`;
     if (role === 'user') {
       bubble.style.backgroundColor = state.config.buttonColor;
     }
@@ -2355,7 +2355,7 @@
     }
 
     banner.style.display = 'flex';
-    banner.className = `dograh-chat-banner${state.chat.status === 'ended' ? ' dograh-chat-banner--info' : ''}`;
+    banner.className = `xtel-chat-banner${state.chat.status === 'ended' ? ' xtel-chat-banner--info' : ''}`;
 
     const span = document.createElement('span');
     span.textContent = text;
@@ -2364,14 +2364,14 @@
     if (state.chat.status === 'expired' || state.chat.status === 'ended') {
       const restart = document.createElement('button');
       restart.type = 'button';
-      restart.className = 'dograh-chat-restart';
+      restart.className = 'xtel-chat-restart';
       restart.textContent = widgetText('startNewChatText');
       restart.onclick = startNewChatSession;
       banner.appendChild(restart);
     } else if (state.chat.status === 'error' || state.chat.status === 'recovering') {
       const retry = document.createElement('button');
       retry.type = 'button';
-      retry.className = 'dograh-chat-restart';
+      retry.className = 'xtel-chat-restart';
       retry.textContent = widgetText('chatRetryText');
       retry.onclick = () => state.chat.status === 'recovering' ? recoverChatSession() : startChatSession();
       banner.appendChild(retry);
@@ -2408,7 +2408,7 @@
   }
 
   // Public API
-  window.DograhWidget = {
+  window.XtelWidget = {
     // Core methods. In chat mode start() opens the chat, stop() only hides a
     // floating panel, and end() completes the server-side session.
     init: init,
@@ -2418,7 +2418,7 @@
     retry: retryCall,
 
     // Visitor context (voice and chat, every embed mode). Merges into whatever
-    // data-dograh-context supplied; applies to the next conversation started.
+    // data-xtel-context supplied; applies to the next conversation started.
     setContext: setContextVariables,
     getContext: () => ({ ...(state.config.contextVariables || {}) }),
 
@@ -2459,7 +2459,7 @@
     // Initialize inline mode manually (for advanced use cases)
     initInline: (options) => {
       if (options.container) {
-        state.config.containerId = options.container.id || 'dograh-inline-container';
+        state.config.containerId = options.container.id || 'xtel-inline-container';
       }
       state.config.embedMode = 'inline';
 
@@ -2478,6 +2478,7 @@
       }
     }
   };
+  window.XtelWidget = window.XtelWidget;
 
   // Auto-initialize on DOM ready
   if (document.readyState === 'loading') {

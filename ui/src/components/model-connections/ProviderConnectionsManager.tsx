@@ -47,7 +47,7 @@ export default function ProviderConnectionsManager({ docsUrl }: { docsUrl?: stri
         description={<>Connect provider accounts, like OpenAI, Google Gemini, ElevenLabs using API Keys, then use them in your <Link href="/model-configurations" className="underline">named model configurations</Link>.
             {docsUrl && <> <a href={docsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 underline">Learn more<ExternalLink className="h-3 w-3" /></a></>}</>}
     >
-        <PageSection title="Provider Connections" description="Add multiple accounts from any provider, including Dograh."
+        <PageSection title="Provider Connections" description="Add multiple accounts from any provider, including Xtel."
             actions={<Button asChild><Link href="/provider-connections/new"><Plus className="h-4 w-4" />Add Provider</Link></Button>}>
             {loading && !catalog && <div className="grid gap-3"><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div>}
             {(error || actionError) && <div role="alert" className="flex items-center justify-between gap-3 rounded-md border border-destructive/40 p-4 text-sm text-destructive">
@@ -58,10 +58,11 @@ export default function ProviderConnectionsManager({ docsUrl }: { docsUrl?: stri
                 <div className="space-y-4">
                     {activeConnections.map(connection => {
                         const entry = providers[connection.provider];
+                        const title = connection.provider === "xtel" || connection.provider === "dograh" || entry?.title === "Xtel" || entry?.title === "Dograh" ? "Xtel" : (entry?.title || connection.provider);
                         return <div key={connection.uuid} className={LIST_ROW_CLASS}>
                             <div className="min-w-0 flex-1 space-y-1">
                                 <h3 className="truncate font-medium"><Link href={`/provider-connections/${connection.uuid}`} className={LIST_ROW_TARGET_CLASS}>{connection.name}</Link></h3>
-                                <p className="text-sm text-muted-foreground">{entry?.title || connection.provider}</p>
+                                <p className="text-sm text-muted-foreground">{title}</p>
                             </div>
                             <div className={LIST_ROW_ACTIONS_CLASS}>
                                 <Button asChild variant="ghost" size="sm"><Link href={`/provider-connections/${connection.uuid}`}><Pencil className="h-3.5 w-3.5" />Edit</Link></Button>

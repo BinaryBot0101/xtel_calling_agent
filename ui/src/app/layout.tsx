@@ -33,8 +33,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Dograh",
+  title: "Xtel",
   description: "Open Source Voice Assistant Workflow Builder",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png", sizes: "192x192" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({
@@ -45,7 +53,7 @@ export default function RootLayout({
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID?.trim();
   const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim();
   const reoClientId = process.env.NEXT_PUBLIC_REO_CLIENT_ID?.trim();
-  // Dograh Cloud only. Self-hosted/OSS installs leave this blank and never
+  // Xtel Cloud only. Self-hosted/OSS installs leave this blank and never
   // render the event bar — same gating shape as the Meta Pixel above.
   const showEventBanner = process.env.NEXT_PUBLIC_EVENT_BANNER?.trim() === "1";
 

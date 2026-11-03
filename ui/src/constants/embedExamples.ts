@@ -1,23 +1,25 @@
 export const HEADLESS_CHAT_EXAMPLE = `let chatState = 'idle';
 
-function withDograhWidget(callback) {
-  if (window.DograhWidget) {
-    callback(window.DograhWidget);
+function withXtelWidget(callback) {
+  const widget = window.XtelWidget || window.XtelWidget;
+  if (widget) {
+    callback(widget);
     return;
   }
 
-  const script = document.getElementById('dograh-widget');
+  const script = document.getElementById('xtel-widget') || document.getElementById('xtel-widget');
   if (!script) {
-    console.error('Dograh embed script not found');
+    console.error('Xtel embed script not found');
     return;
   }
 
   script.addEventListener('load', () => {
-    if (window.DograhWidget) callback(window.DograhWidget);
+    const w = window.XtelWidget || window.XtelWidget;
+    if (w) callback(w);
   }, { once: true });
 }
 
-withDograhWidget((widget) => {
+withXtelWidget((widget) => {
   widget.onChatStateChange((state) => {
     chatState = state; // idle | starting | ready | waiting | ended | expired | error
   });

@@ -827,7 +827,7 @@ async def _run_pipeline_impl(
                 usage_context="variable_extraction",
             )
             if needs_extraction_llm
-            and user_config.llm.provider == ServiceProviders.DOGRAH.value
+            and user_config.llm.provider in {ServiceProviders.DOGRAH.value, "xtel"}
             else inference_llm
         )
         # llm_* refers to the side-channel text LLM (variable extraction,

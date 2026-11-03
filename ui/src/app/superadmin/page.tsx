@@ -17,8 +17,8 @@ type ImpersonationTarget = "provider" | "email";
 
 const DEPLOYMENTS = [
     { value: "default", label: "Default deployment", appUrl: undefined },
-    { value: "eu", label: "Europe (EU) — eu.dograh.com", appUrl: "https://eu.dograh.com" },
-    { value: "in", label: "India (IN) — in.dograh.com", appUrl: "https://in.dograh.com" },
+    { value: "eu", label: "Europe (EU) — eu.xtel.com", appUrl: "https://eu.xtel.com" },
+    { value: "in", label: "India (IN) — in.xtel.com", appUrl: "https://in.xtel.com" },
 ];
 
 export default function SuperadminPage() {

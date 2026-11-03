@@ -48,7 +48,8 @@ def _invalid(message):
 
 
 def _provider(value):
-    return str(getattr(value, "value", value))
+    val = str(getattr(value, "value", value))
+    return "dograh" if val == "xtel" else val
 
 
 def connection_provider(provider):
@@ -511,10 +512,10 @@ async def _resolve_spec(
             key == "llm"
             and spec.llm_fallback
             and spec.llm_fallback.rules
-            and row.provider == "dograh"
+            and row.provider in {"dograh", "xtel"}
         ):
             raise _invalid("LLM fallbacks are unavailable in Dograh mode")
-        if key.startswith("fallback_") and row.provider == "dograh":
+        if key.startswith("fallback_") and row.provider in {"dograh", "xtel"}:
             raise _invalid(
                 "Dograh manages its own fallbacks and cannot be a fallback target"
             )
@@ -546,7 +547,7 @@ async def _resolve_spec(
             raise _invalid("Fallback target must differ from the primary LLM")
     dograh_keys = []
     for row, service in services.values():
-        if row.provider == "dograh":
+        if row.provider in {"dograh", "xtel"}:
             dograh_keys.append(set(service.get_all_api_keys()))
     common = set.intersection(*dograh_keys) if dograh_keys else set()
     if dograh_keys and not common:
@@ -572,7 +573,7 @@ async def _resolve_spec(
             if row.uuid not in selected:
                 selected[row.uuid] = (
                     keys.index(dograh_key)
-                    if row.provider == "dograh"
+                    if row.provider in {"dograh", "xtel"}
                     else choice(range(len(keys)))
                 )
             index = selected[row.uuid]
@@ -660,7 +661,7 @@ async def hydrate_model_configuration_snapshot(organization_id, snapshot):
             )
         row = connections[uuid]
         runtime_provider = _schema(role, row.provider).model_fields["provider"].default
-        if runtime_provider != selection["provider"]:
+        if _provider(runtime_provider) != _provider(selection["provider"]):
             raise _invalid("Prepared provider does not match connection")
         credentials = deepcopy(row.credentials)
         index = selection.get("api_key_index")
