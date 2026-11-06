@@ -65,6 +65,7 @@ type SidebarNavItem = {
   url: string;
   icon: LucideIcon;
   showsTelephonyWarning?: boolean;
+  hidden?: boolean;
 };
 
 type SidebarNavSection = {
@@ -112,16 +113,19 @@ const NAV_SECTIONS: SidebarNavSection[] = [
         title: "Tools",
         url: "/tools",
         icon: Wrench,
+        hidden: true,
       },
       {
         title: "Credentials",
         url: "/credentials",
         icon: ShieldCheck,
+        hidden: true,
       },
       {
         title: "Files",
         url: "/files",
         icon: Database,
+        hidden: true,
       },
       {
         title: "Campaigns",
@@ -132,11 +136,13 @@ const NAV_SECTIONS: SidebarNavSection[] = [
         title: "Recordings",
         url: "/recordings",
         icon: AudioLines,
+        hidden: true,
       },
       {
         title: "Developers",
         url: "/api-keys",
         icon: Key,
+        hidden: true,
       },
     ],
   },
@@ -360,31 +366,36 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className={cn("notranslate", isCollapsed && "px-0")} translate="no">
-        {NAV_SECTIONS.map((section, index) => (
-          <SidebarGroup
-            key={section.label ?? "dashboard"}
-            className={index === 0 ? "mt-2" : "mt-6"}
-          >
-            {section.label && (
-              <SidebarGroupLabel
-                className={cn(
-                  "notranslate text-xs font-semibold uppercase tracking-wider text-muted-foreground",
-                  isCollapsed && "hidden"
-                )}
-                translate="no"
-              >
-                {section.label}
-              </SidebarGroupLabel>
-            )}
-            <SidebarMenu>
-              {section.items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarLink item={item} />
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroup>
-        ))}
+        {NAV_SECTIONS.map((section, index) => {
+          const visibleItems = section.items.filter((item) => !item.hidden);
+          if (visibleItems.length === 0) return null;
+
+          return (
+            <SidebarGroup
+              key={section.label ?? "dashboard"}
+              className={index === 0 ? "mt-2" : "mt-6"}
+            >
+              {section.label && (
+                <SidebarGroupLabel
+                  className={cn(
+                    "notranslate text-xs font-semibold uppercase tracking-wider text-muted-foreground",
+                    isCollapsed && "hidden"
+                  )}
+                  translate="no"
+                >
+                  {section.label}
+                </SidebarGroupLabel>
+              )}
+              <SidebarMenu>
+                {visibleItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarLink item={item} />
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroup>
+          );
+        })}
       </SidebarContent>
 
       <SidebarFooter

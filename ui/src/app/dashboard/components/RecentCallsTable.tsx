@@ -149,7 +149,7 @@ export function RecentCallsTable({
                       {formatDuration(run.call_duration_seconds)}
                     </TableCell>
                     <TableCell>
-                      {getDispositionBadge(run.disposition_code)}
+                      {getDispositionBadge(run.disposition)}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                       {formatDateTime(run.created_at, timezone)}

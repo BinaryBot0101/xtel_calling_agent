@@ -172,7 +172,7 @@ export default function DashboardPage() {
 
     const counts: Record<string, number> = {};
     runs.forEach((run) => {
-      const disp = run.disposition_code || "Completed";
+      const disp = run.disposition || "Completed";
       counts[disp] = (counts[disp] || 0) + 1;
     });
 
@@ -190,7 +190,7 @@ export default function DashboardPage() {
     return runs.filter(
       (r) =>
         (r.call_duration_seconds && r.call_duration_seconds > 0) ||
-        (r.disposition_code && !r.disposition_code.toLowerCase().includes("fail"))
+        (r.disposition && !r.disposition.toLowerCase().includes("fail"))
     ).length;
   }, [runs]);
 
